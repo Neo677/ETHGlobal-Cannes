@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@privy-io/react-auth": "^1.47.0",
-    "@self.id/framework": "^1.0.0",
+    "@self.id/framework": "^0.4.0",
     "@self.id/web": "^1.0.0",
     "@web3-storage/w3up-client": "^17.3.0",
     "class-variance-authority": "^0.7.0",

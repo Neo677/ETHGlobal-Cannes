@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import "@oasisprotocol/sapphire-hardhat";
 import "./tasks";
 
 const accounts = process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : {
@@ -20,6 +21,10 @@ const config: HardhatUserConfig = {
     },
     localhost: {
       url: "http://127.0.0.1:8545",
+    },
+    sapphire: {
+      url: "https://sapphire.oasis.io",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
   }
 };
