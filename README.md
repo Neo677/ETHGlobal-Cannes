@@ -80,3 +80,26 @@ Idir
 Thomas
 
 ````
+
+
+- TO DEPLOY - 
+npx hardhat deploy-carte-grise --network sapphire-testnet
+this will generate the contract 
+
+- TO SET A ROLE - 
+ npx hardhat set-role \                                   
+  --network sapphire-testnet \
+  --contract contract_long_id \
+  --address your_wallet_address_starts_with 0x0 \
+  --role 1
+
+- TO MINT THE VEHICULE - 
+✗ npx hardhat mint-vehicle \
+  --network sapphire-testnet \
+  --contract contract_long_id \
+  --to your_wallet_address_starts_with 0x0 \
+  --vin "VIN1234567890ABC" \
+  --brand "Tesla" \
+  --model "Model 3" \
+  --mileage 42000 \
+  --uri "ipfs://bafkreigh2akiscaildcfl4dn6dlkybdjv6xw5ojmmdtqi7hh7uopx4pgpe"
