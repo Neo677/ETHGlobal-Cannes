@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { usePrivySelf } from '@/providers/PrivySelfProvider';
 import { RoleSelector } from '@/components/RoleSelector/RoleSelector';
 import { UserRole } from '@/types/profile';
@@ -27,11 +27,13 @@ export default function OnboardingPage() {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleRoleSelect = (role: UserRole) => {
+  // Memoize the role selection handler to prevent unnecessary re-renders
+  const handleRoleSelect = useCallback((role: UserRole) => {
     setSelectedRole(role);
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  // Memoize the submit handler
+  const handleSubmit = useCallback(async () => {
     if (!selectedRole) return;
 
     setIsSubmitting(true);
@@ -55,38 +57,47 @@ export default function OnboardingPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [selectedRole, profile, writeProfile, router]);
+
+  // Memoize loading state
+  const loadingContent = useMemo(() => (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <Card className="w-full max-w-md border-0 shadow-xl">
+        <CardHeader className="text-center">
+          <Skeleton className="h-12 w-12 rounded-full mx-auto mb-4" />
+          <Skeleton className="h-6 w-48 mx-auto mb-2" />
+          <Skeleton className="h-4 w-32 mx-auto" />
+        </CardHeader>
+      </Card>
+    </div>
+  ), []);
+
+  // Memoize authentication required content
+  const authRequiredContent = useMemo(() => (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <Card className="w-full max-w-md border-0 shadow-xl">
+        <CardHeader className="text-center">
+          <div className="text-4xl mb-4">🔐</div>
+          <CardTitle className="text-2xl">Authentication Required</CardTitle>
+          <p className="text-gray-600">
+            Please connect to continue with onboarding
+          </p>
+        </CardHeader>
+        <CardContent className="text-center">
+          <Button onClick={connect} className="w-full">
+            Connect with Privy
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  ), [connect]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return loadingContent;
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md border-0 shadow-xl">
-          <CardHeader className="text-center">
-            <div className="text-4xl mb-4">🔐</div>
-            <CardTitle className="text-2xl">Authentication Required</CardTitle>
-            <p className="text-gray-600">
-              Please connect to continue with onboarding
-            </p>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Button onClick={connect} className="w-full">
-              Connect with Privy
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return authRequiredContent;
   }
 
   return (

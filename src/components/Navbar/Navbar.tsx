@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { usePrivySelf } from '@/providers/PrivySelfProvider';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export const Navbar: React.FC = () => {
@@ -57,19 +56,11 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <div className="flex items-center space-x-3">
-                <div className="hidden sm:flex items-center space-x-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-blue-100 text-blue-600 text-sm font-medium">
-                      {profile?.name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-sm text-gray-600">
-                    {profile?.name || 'User'}
-                  </div>
-                </div>
-                <Badge variant="secondary" className="hidden sm:inline-flex">
-                  {profile?.role || 'User'}
-                </Badge>
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-blue-100 text-blue-600 text-sm font-medium">
+                    {profile?.name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
                 <Button
                   variant="outline"
                   size="sm"

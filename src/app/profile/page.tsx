@@ -17,7 +17,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePrivySelf } from '@/providers/PrivySelfProvider';
 import { UserRole, ROLE_CONFIGS } from '@/types/profile';
 import { useRouter } from 'next/navigation';
@@ -67,14 +67,16 @@ export default function ProfilePage() {
     }
   }, [profile]);
 
-  const handleInputChange = (field: string, value: string | UserRole) => {
+  // Memoize input change handler
+  const handleInputChange = useCallback((field: string, value: string | UserRole) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
     }));
-  };
+  }, []);
 
-  const handleHistoryAdd = () => {
+  // Memoize history add handler
+  const handleHistoryAdd = useCallback(() => {
     if (newHistoryItem.trim()) {
       setFormData(prev => ({
         ...prev,
@@ -82,16 +84,18 @@ export default function ProfilePage() {
       }));
       setNewHistoryItem('');
     }
-  };
+  }, [newHistoryItem]);
 
-  const handleHistoryRemove = (index: number) => {
+  // Memoize history remove handler
+  const handleHistoryRemove = useCallback((index: number) => {
     setFormData(prev => ({
       ...prev,
       history: prev.history.filter((_, i) => i !== index),
     }));
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Memoize submit handler
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAuthenticated) return;
 
@@ -108,41 +112,47 @@ export default function ProfilePage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [isAuthenticated, profile, formData, writeProfile]);
+
+  // Memoize loading content
+  const loadingContent = useMemo(() => (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <Card className="w-full max-w-md border-0 shadow-xl">
+        <CardHeader className="text-center">
+          <Skeleton className="h-12 w-12 rounded-full mx-auto mb-4" />
+          <Skeleton className="h-6 w-48 mx-auto mb-2" />
+          <Skeleton className="h-4 w-32 mx-auto" />
+        </CardHeader>
+      </Card>
+    </div>
+  ), []);
+
+  // Memoize auth required content
+  const authRequiredContent = useMemo(() => (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <Card className="w-full max-w-md border-0 shadow-xl">
+        <CardHeader className="text-center">
+          <div className="text-4xl mb-4">🔐</div>
+          <CardTitle className="text-2xl">Authentication Required</CardTitle>
+          <p className="text-gray-600">
+            Please connect to edit your profile
+          </p>
+        </CardHeader>
+        <CardContent className="text-center">
+          <Button onClick={connect} className="w-full">
+            Connect with Privy
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  ), [connect]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md border-0 shadow-xl">
-          <CardHeader className="text-center">
-            <Skeleton className="h-12 w-12 rounded-full mx-auto mb-4" />
-            <Skeleton className="h-6 w-48 mx-auto mb-2" />
-            <Skeleton className="h-4 w-32 mx-auto" />
-          </CardHeader>
-        </Card>
-      </div>
-    );
+    return loadingContent;
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md border-0 shadow-xl">
-          <CardHeader className="text-center">
-            <div className="text-4xl mb-4">🔐</div>
-            <CardTitle className="text-2xl">Authentication Required</CardTitle>
-            <p className="text-gray-600">
-              Please connect to edit your profile
-            </p>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Button onClick={connect} className="w-full">
-              Connect with Privy
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return authRequiredContent;
   }
 
   return (
