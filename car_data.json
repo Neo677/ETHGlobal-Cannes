@@ -1,0 +1,26 @@
+[
+  {
+    "nft_token": null,
+    "name": "John Doe",
+    "vin": "1HGCM82633A004352",
+    "history": {"accident_count": 1, "vehicle_type": "sedan"},
+    "location": "CA",
+    "address": "1234 Elm Street, Some City, CA",
+    "car_model": "Honda Accord",
+    "years_licensed": 2,
+    "violations": 1,
+    "claims": 0
+  },
+  {
+    "nft_token": null,
+    "name": "Jane Smith",
+    "vin": "2FTRX18W1XCA12345",
+    "history": {"accident_count": 0, "vehicle_type": "SUV"},
+    "location": "NY",
+    "address": "5678 Oak Avenue, Another City, NY",
+    "car_model": "Toyota RAV4",
+    "years_licensed": 10,
+    "violations": 0,
+    "claims": 1
+  }
+]

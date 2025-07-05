@@ -1,0 +1,13 @@
+services:
+  car-nft-service:
+    image: docker.io/idir1900/car-nft-app:latest
+    command: python nft_generation.py
+
+    # Optional: ports, environment, volumes, etc.
+
+# Optional: define networks or volumes if needed
+# networks:
+#   default:
+#     driver: bridge
+# volumes:
+#   car_data:
