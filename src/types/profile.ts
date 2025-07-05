@@ -13,10 +13,10 @@ export interface BasicProfile {
 }
 
 // Types pour les rôles utilisateur
-export type UserRole = 'owner' | 'dealer' | 'insurer' | 'admin';
+export type UserRole = 'owner' | 'seller' | 'insurer' | 'admin';
 
 export interface UserPermissions {
-  canMintNFTs: boolean;        // Concessionnaire
+  canMintNFTs: boolean;        // Vendeur
   canTransferNFTs: boolean;     // Propriétaire
   canUpdateInsurance: boolean;  // Assureur
   canViewAllProfiles: boolean;  // Admin
@@ -58,7 +58,7 @@ export interface ExtendedProfile extends BasicProfile {
   updatedAt: string;
   role: UserRole;
   roleMetadata?: {
-    companyName?: string;      // Pour concessionnaire/assureur
+    companyName?: string;      // Pour vendeur/assureur
     licenseNumber?: string;    // Numéro de licence
     businessAddress?: string;  // Adresse professionnelle
     verifiedBy?: string;       // DID de celui qui a vérifié
@@ -107,9 +107,9 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
       canVerifyProfiles: false
     }
   },
-  dealer: {
-    role: 'dealer',
-    label: 'Dealer',
+  seller: {
+    role: 'seller',
+    label: 'Seller',
     description: 'Vehicle seller',
     color: 'bg-green-500',
     icon: '🏢',

@@ -77,7 +77,7 @@ export const Hero: React.FC = () => {
                     <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                       2
                     </div>
-                    <span className="text-gray-700">Choose your role (Owner/Dealer/Insurer)</span>
+                    <span className="text-gray-700">Choose your role (Owner/Seller/Insurer)</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">

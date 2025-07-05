@@ -230,7 +230,7 @@ export default function ProfilePage() {
                   Role
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {(['owner', 'dealer', 'insurer'] as UserRole[]).map((role) => {
+                  {(['owner', 'seller', 'insurer'] as UserRole[]).map((role) => {
                     const config = ROLE_CONFIGS[role];
                     return (
                       <Card

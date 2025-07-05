@@ -44,7 +44,7 @@ export default function Home() {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader className="text-center pb-4">
                 <div className="text-4xl mb-4">🏢</div>
-                <CardTitle className="text-xl">Dealer</CardTitle>
+                <CardTitle className="text-xl">Seller</CardTitle>
                 <p className="text-gray-600 text-sm">Vehicle seller</p>
               </CardHeader>
               <CardContent className="text-center">

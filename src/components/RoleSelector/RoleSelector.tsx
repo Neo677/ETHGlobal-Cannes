@@ -37,7 +37,7 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {(['owner', 'dealer', 'insurer'] as UserRole[]).map((role) => {
+        {(['owner', 'seller', 'insurer'] as UserRole[]).map((role) => {
           const config = ROLE_CONFIGS[role];
           const isSelected = selectedRole === role;
           const isHovered = hoveredRole === role;

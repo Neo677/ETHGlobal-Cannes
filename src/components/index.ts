@@ -7,7 +7,7 @@ export { Hero } from './Hero/Hero';
 
 // Dashboards
 export { OwnerDashboard } from './Dashboards/OwnerDashboard';
-export { DealerDashboard } from './Dashboards/DealerDashboard';
+export { SellerDashboard } from './Dashboards/SellerDashboard';
 export { InsurerDashboard } from './Dashboards/InsurerDashboard';
 
 // Role Management
