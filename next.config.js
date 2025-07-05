@@ -28,6 +28,13 @@ const nextConfig = {
     NEXT_PUBLIC_PRIVY_APP_ID: process.env.NEXT_PUBLIC_PRIVY_APP_ID,
     NEXT_PUBLIC_SELF_CERAMIC_API_URL: process.env.NEXT_PUBLIC_SELF_CERAMIC_API_URL,
   },
+  // Configuration pour HTTPS local
+  server: {
+    https: process.env.HTTPS === 'true' ? {
+      key: process.env.SSL_KEY_FILE,
+      cert: process.env.SSL_CRT_FILE,
+    } : false,
+  },
 };
 
 module.exports = nextConfig; 

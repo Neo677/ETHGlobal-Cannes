@@ -25,10 +25,31 @@ if ! command -v mkcert &> /dev/null; then
     fi
 fi
 
-# Créer les certificats
-echo "🔐 Création des certificats SSL..."
-mkcert -key-file ./localhost-key.pem -cert-file ./localhost.pem localhost 127.0.0.1
+# Créer les certificats s'ils n'existent pas
+if [ ! -f "./localhost.pem" ] || [ ! -f "./localhost-key.pem" ]; then
+    echo "🔐 Création des certificats SSL..."
+    mkcert -key-file ./localhost-key.pem -cert-file ./localhost.pem localhost 127.0.0.1
+fi
+
+# Vérifier que les certificats existent
+if [ ! -f "./localhost.pem" ] || [ ! -f "./localhost-key.pem" ]; then
+    echo "❌ Erreur: Les certificats SSL n'ont pas été créés"
+    exit 1
+fi
+
+echo "✅ Certificats SSL prêts"
+echo "🔐 Certificat: ./localhost.pem"
+echo "🔑 Clé: ./localhost-key.pem"
 
 # Lancer Next.js en HTTPS
 echo "🚀 Lancement de Next.js en HTTPS..."
-HTTPS=true SSL_CRT_FILE=./localhost.pem SSL_KEY_FILE=./localhost-key.pem npm run dev 
+echo "📱 URL: https://localhost:3000"
+echo "🔒 HTTPS activé pour Privy"
+
+# Variables d'environnement pour HTTPS
+export HTTPS=true
+export SSL_CRT_FILE=./localhost.pem
+export SSL_KEY_FILE=./localhost-key.pem
+
+# Lancer Next.js
+npm run dev 
