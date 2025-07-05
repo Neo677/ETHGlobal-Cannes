@@ -4,9 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:https": "./scripts/dev-https.sh",
-    "dev:https-server": "node scripts/https-server.js",
-    "dev:ngrok": "./scripts/dev-ngrok.sh",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
