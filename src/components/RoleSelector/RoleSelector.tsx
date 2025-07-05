@@ -36,8 +36,8 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {(['owner', 'seller', 'insurer'] as UserRole[]).map((role) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        {(['owner', 'seller'] as UserRole[]).map((role) => {
           const config = ROLE_CONFIGS[role];
           const isSelected = selectedRole === role;
           const isHovered = hoveredRole === role;
@@ -87,11 +87,6 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
                     {config.permissions.canTransferNFTs && (
                       <Badge variant="secondary" className="text-xs">
                         Transfer NFTs
-                      </Badge>
-                    )}
-                    {config.permissions.canUpdateInsurance && (
-                      <Badge variant="secondary" className="text-xs">
-                        Manage Insurance
                       </Badge>
                     )}
                     {config.permissions.canVerifyProfiles && (

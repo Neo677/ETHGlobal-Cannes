@@ -10,7 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 // Lazy load dashboards to improve performance
 const OwnerDashboard = React.lazy(() => import('@/components/Dashboards/OwnerDashboard').then(module => ({ default: module.OwnerDashboard })));
 const SellerDashboard = React.lazy(() => import('@/components/Dashboards/SellerDashboard').then(module => ({ default: module.SellerDashboard })));
-const InsurerDashboard = React.lazy(() => import('@/components/Dashboards/InsurerDashboard').then(module => ({ default: module.InsurerDashboard })));
 
 interface DashboardSelectorProps {
   profile: BasicProfile;
@@ -117,12 +116,6 @@ export const DashboardSelector: React.FC<DashboardSelectorProps> = ({
       return (
         <Suspense fallback={<DashboardSkeleton />}>
           <SellerDashboard profile={profile} />
-        </Suspense>
-      );
-    case 'insurer':
-      return (
-        <Suspense fallback={<DashboardSkeleton />}>
-          <InsurerDashboard profile={profile} />
         </Suspense>
       );
     case 'admin':

@@ -245,33 +245,6 @@ export const useSelfID = () => {
     }
   }, []);
 
-  // Signature de données
-  const signData = useCallback(async (data: any) => {
-    try {
-      setLoading(true);
-      setError('');
-
-      const signature = await selfIDService.signData(data);
-      return signature;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign data');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Vérification de signature
-  const verifySignature = useCallback(async (data: any, signature: string, address: string) => {
-    try {
-      const isValid = await selfIDService.verifySignature(data, signature, address);
-      return isValid;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to verify signature');
-      return false;
-    }
-  }, []);
-
   // Déconnexion
   const disconnect = useCallback(() => {
     selfIDService.disconnect();
@@ -320,8 +293,6 @@ export const useSelfID = () => {
     loadProfileByDID,
     getAllProfiles,
     getProfilesByRole,
-    signData,
-    verifySignature,
     disconnect,
     
     // Utilitaires

@@ -1,18 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelfID } from '@/hooks/useSelfID';
+import { usePrivySelf } from '@/providers/PrivySelfProvider';
 import { BasicProfile, ExtendedProfile, UserRole, ROLE_CONFIGS } from '@/types/profile';
 import TrustBadge from './TrustBadge';
 import RoleBadge from './RoleBadge';
 import RoleSelector from './RoleSelector';
-import Verification from './Verification';
-import ProfileViewer from './ProfileViewer';
+import { Verification } from './Verification';
+import { ProfileViewer } from './ProfileViewer';
 import ProfileList from './ProfileList';
 import ProfileReset from './ProfileReset';
 
 interface ProfileProps {
-  onProfileUpdate?: (profile: ExtendedProfile, did: string) => void;
+  onProfileUpdate?: (profile: ExtendedProfile | undefined, did: string) => void;
   onDidChange?: (did: string) => void;
 }
 
@@ -290,8 +291,6 @@ export default function Profile({ onProfileUpdate, onDidChange }: ProfileProps) 
       {isConnected && hasProfile && (
         <Verification 
           profile={profile!}
-          onVerify={handleVerification}
-          loading={loading}
         />
       )}
 
@@ -310,22 +309,12 @@ export default function Profile({ onProfileUpdate, onDidChange }: ProfileProps) 
                 🔄 Transférer Véhicule
               </button>
             )}
-            {currentPermissions.canUpdateInsurance && (
-              <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
-                🛡️ Mettre à jour Assurance
-              </button>
-            )}
             {currentPermissions.canViewAllProfiles && (
               <button 
                 onClick={handleLoadAllProfiles}
                 className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors"
               >
                 👥 Voir tous les profils
-              </button>
-            )}
-            {currentPermissions.canVerifyProfiles && (
-              <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
-                ✅ Vérifier profils
               </button>
             )}
           </div>
@@ -389,9 +378,8 @@ export default function Profile({ onProfileUpdate, onDidChange }: ProfileProps) 
 
         {showProfileViewer && viewProfile && (
           <ProfileViewer 
-            did={viewDid}
-            onProfileLoad={setViewProfile}
-            showVerification={true}
+            profile={viewProfile}
+            onClose={() => setShowProfileViewer(false)}
           />
         )}
       </div>
@@ -428,12 +416,6 @@ const ProfileDisplay: React.FC<{ profile: ExtendedProfile }> = ({ profile }) => 
           {profile.verification.emailVerified && (
             <span className="ml-2 text-green-600 text-sm">✓ Vérifié</span>
           )}
-        </div>
-      )}
-      {profile.insurance && (
-        <div>
-          <span className="font-medium text-gray-700">Assurance:</span>
-          <span className="ml-2">{profile.insurance}</span>
         </div>
       )}
       {profile.ethAddress && (
@@ -475,7 +457,6 @@ const ProfileForm: React.FC<{
   const [formData, setFormData] = useState({
     name: profile?.name || '',
     email: profile?.email || '',
-    insurance: profile?.insurance || '',
     publicName: profile?.publicName || false,
     companyName: profile?.roleMetadata?.companyName || '',
     licenseNumber: profile?.roleMetadata?.licenseNumber || ''
@@ -540,46 +521,29 @@ const ProfileForm: React.FC<{
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Assurance
+          Nom de l'entreprise
         </label>
         <input
           type="text"
-          value={formData.insurance}
-          onChange={(e) => updateField('insurance', e.target.value)}
+          value={formData.companyName}
+          onChange={(e) => updateField('companyName', e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="ex: AXA, Allianz"
+          placeholder="Nom de votre entreprise"
         />
       </div>
 
-      {/* Champs spécifiques au rôle */}
-      {(role === 'dealer' || role === 'insurer') && (
-        <>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nom de l'entreprise
-            </label>
-            <input
-              type="text"
-              value={formData.companyName}
-              onChange={(e) => updateField('companyName', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Nom de votre entreprise"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Numéro de licence
-            </label>
-            <input
-              type="text"
-              value={formData.licenseNumber}
-              onChange={(e) => updateField('licenseNumber', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Numéro de licence professionnelle"
-            />
-          </div>
-        </>
-      )}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Numéro de licence
+        </label>
+        <input
+          type="text"
+          value={formData.licenseNumber}
+          onChange={(e) => updateField('licenseNumber', e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Numéro de licence professionnelle"
+        />
+      </div>
 
       <div className="flex items-center">
         <input

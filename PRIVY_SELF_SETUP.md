@@ -1,4 +1,235 @@
-# 🚗 MetaCarTag - Privy + Self.ID Setup
+# 🔐 Privy + Self.ID Setup Guide
+
+## 📋 **Vue d'Ensemble**
+
+Ce guide explique comment configurer **Privy** (authentification) + **Self.ID** (identité décentralisée) pour MetaCarTag.
+
+### **Technologies Utilisées**
+- **Privy** : Authentification par email/SMS
+- **Self.ID** : Profils décentralisés sur Ceramic
+- **Ceramic Network** : Base de données décentralisée
+
+## 🚀 **Installation**
+
+### **1. Installer les Dépendances**
+```bash
+npm install @privy-io/react-auth @self.id/web @self.id/framework
+```
+
+### **2. Variables d'Environnement**
+Créer un fichier `.env.local` :
+```env
+# Privy
+NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id
+
+# Self.ID (optionnel pour le développement)
+NEXT_PUBLIC_SELF_ID_CLIENT_ID=your_self_id_client_id
+SELF_ID_PRIVATE_KEY=your_self_id_private_key
+```
+
+### **3. Configuration Privy**
+1. Aller sur [console.privy.io](https://console.privy.io)
+2. Créer une nouvelle application
+3. Copier l'App ID dans `.env.local`
+
+## 🔧 **Configuration de l'Application**
+
+### **1. Wrapper l'App avec PrivyProvider**
+
+```tsx
+// app/layout.tsx
+import { PrivyProvider } from '@privy-io/react-auth';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <PrivyProvider
+          appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID!}
+          config={{
+            loginMethods: ['email', 'sms'],
+            appearance: {
+              theme: 'light',
+              accentColor: '#3B82F6',
+            },
+          }}
+        >
+          {children}
+        </PrivyProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### **2. Hook Personnalisé**
+
+```tsx
+// hooks/usePrivySelfProfile.ts
+import { usePrivy } from '@privy-io/react-auth';
+
+export const usePrivySelfProfile = () => {
+  const {
+    login,
+    logout,
+    authenticated,
+    user,
+    ready,
+  } = usePrivy();
+
+  // Logique de gestion des profils...
+  
+  return {
+    connect: login,
+    disconnect: logout,
+    isAuthenticated: authenticated,
+    user,
+    ready,
+    // ... autres méthodes
+  };
+};
+```
+
+## 📱 **Utilisation**
+
+### **Connexion Utilisateur**
+```tsx
+const { connect, isAuthenticated, user } = usePrivySelfProfile();
+
+// Connexion
+await connect();
+
+// Vérification
+if (isAuthenticated && user) {
+  console.log('User connected:', user);
+}
+```
+
+### **Gestion des Profils**
+```tsx
+const { readProfile, writeProfile } = usePrivySelfProfile();
+
+// Lire un profil
+const profile = await readProfile();
+
+// Écrire un profil
+await writeProfile({
+  name: 'John Doe',
+  email: 'john@example.com',
+  role: 'owner'
+});
+```
+
+## 🔒 **Sécurité**
+
+### **Avantages de Privy**
+- ✅ **Pas de MetaMask requis** - Sécurité renforcée
+- ✅ **Authentification par email/SMS** - UX simplifiée
+- ✅ **Embedded wallets** - Gestion automatique
+- ✅ **Multi-chaînes** - Support Ethereum, Polygon, etc.
+- ✅ **Recovery facile** - Pas de perte de clés
+
+### **Configuration Sécurisée**
+```tsx
+<PrivyProvider
+  appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID!}
+  config={{
+    loginMethods: ['email', 'sms'],
+    appearance: {
+      theme: 'light',
+      accentColor: '#3B82F6',
+    },
+    // Sécurité renforcée
+    supportedChains: [1, 137], // Ethereum + Polygon
+    defaultChain: 1,
+  }}
+>
+```
+
+## 🧪 **Tests**
+
+### **Mode Développement**
+```tsx
+// Fallback pour les tests
+const usePrivyFallback = () => {
+  const [authenticated, setAuthenticated] = useState(false);
+  
+  const login = async () => {
+    setAuthenticated(true);
+  };
+  
+  return { login, authenticated };
+};
+```
+
+### **Tests d'Intégration**
+```tsx
+// Test de connexion
+test('should connect with Privy', async () => {
+  const { connect, isAuthenticated } = usePrivySelfProfile();
+  await connect();
+  expect(isAuthenticated).toBe(true);
+});
+```
+
+## 🚨 **Dépannage**
+
+### **Erreurs Courantes**
+
+1. **"Privy not available"**
+   ```bash
+   npm install @privy-io/react-auth
+   ```
+
+2. **"App ID not configured"**
+   ```env
+   NEXT_PUBLIC_PRIVY_APP_ID=your_app_id
+   ```
+
+3. **"User not authenticated"**
+   ```tsx
+   // Vérifier l'état
+   if (!ready) return <Loading />;
+   if (!authenticated) return <LoginButton />;
+   ```
+
+### **Logs de Debug**
+```tsx
+const { user, authenticated, ready } = usePrivy();
+
+console.log('Privy State:', {
+  user: user?.id,
+  authenticated,
+  ready,
+  wallet: user?.wallet?.address
+});
+```
+
+## 📚 **Ressources**
+
+- [Privy Documentation](https://docs.privy.io/)
+- [Self.ID Documentation](https://developers.ceramic.network/)
+- [Ceramic Network](https://ceramic.network/)
+
+## ✅ **Checklist de Configuration**
+
+- [ ] Privy App ID configuré
+- [ ] PrivyProvider wrapper ajouté
+- [ ] Hook usePrivySelfProfile créé
+- [ ] Variables d'environnement définies
+- [ ] Tests de connexion passés
+- [ ] Gestion d'erreurs implémentée
+- [ ] Fallback pour développement configuré
+
+---
+
+**Note** : Cette configuration utilise uniquement Privy pour l'authentification, supprimant toute dépendance à MetaMask pour des raisons de sécurité.
+
+## 🚗 MetaCarTag - Privy + Self.ID Setup
 
 ## Vue d'ensemble
 

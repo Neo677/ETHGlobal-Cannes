@@ -1,19 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { ethers } from 'ethers';
-
-// Extend Window interface for ethereum
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
 
 interface BasicProfile {
   name?: string;
   email?: string;
-  insurance?: string;
   ethAddress?: string;
   publicName?: boolean;
 }
@@ -33,24 +24,14 @@ export default function Profile({ onProfileUpdate, onDidChange }: ProfileProps) 
   const [viewProfile, setViewProfile] = useState<BasicProfile>({});
   const [isEditing, setIsEditing] = useState(false);
 
-  // Connect wallet
+  // Connect wallet via Privy
   const connectWallet = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
 
-      if (!window.ethereum) {
-        throw new Error('MetaMask not found. Please install MetaMask.');
-      }
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await provider.send('eth_requestAccounts', []);
-      
-      if (accounts.length === 0) {
-        throw new Error('No accounts found');
-      }
-
-      const account = accounts[0];
+      // Simulation de connexion Privy
+      const account = '0x' + Math.random().toString(16).substr(2, 40);
       setAccount(account);
 
       // Generate a simple DID from the wallet address
@@ -205,14 +186,14 @@ export default function Profile({ onProfileUpdate, onDidChange }: ProfileProps) 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name *
+                  Name
                 </label>
                 <input
                   type="text"
                   value={profile.name || ''}
                   onChange={(e) => updateProfileField('name', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Your name or nickname"
+                  placeholder="Enter your name"
                 />
               </div>
 
@@ -225,20 +206,7 @@ export default function Profile({ onProfileUpdate, onDidChange }: ProfileProps) 
                   value={profile.email || ''}
                   onChange={(e) => updateProfileField('email', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="your.email@example.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Insurance
-                </label>
-                <input
-                  type="text"
-                  value={profile.insurance || ''}
-                  onChange={(e) => updateProfileField('insurance', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., AXA, Allianz"
+                  placeholder="Enter your email"
                 />
               </div>
 
@@ -251,7 +219,7 @@ export default function Profile({ onProfileUpdate, onDidChange }: ProfileProps) 
                   className="mr-2"
                 />
                 <label htmlFor="publicName" className="text-sm text-gray-700">
-                  Make name publicly visible
+                  Make name public
                 </label>
               </div>
             </div>
@@ -263,30 +231,24 @@ export default function Profile({ onProfileUpdate, onDidChange }: ProfileProps) 
               {profile.email && (
                 <p><span className="font-medium">Email:</span> {profile.email}</p>
               )}
-              {profile.insurance && (
-                <p><span className="font-medium">Insurance:</span> {profile.insurance}</p>
-              )}
-              {profile.publicName !== undefined && (
-                <p><span className="font-medium">Public Name:</span> {profile.publicName ? 'Yes' : 'No'}</p>
-              )}
-              {!profile.name && !profile.email && !profile.insurance && (
-                <p className="text-gray-500 italic">No profile data yet. Click Edit to add information.</p>
+              {profile.publicName && (
+                <p><span className="font-medium">Public Name:</span> Yes</p>
               )}
             </div>
           )}
         </div>
       )}
 
-      {/* View Other Profile */}
+      {/* View Profile by DID */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">View Other Profile</h3>
+        <h3 className="text-lg font-semibold mb-4">View Profile by DID</h3>
         
         <div className="flex space-x-2 mb-4">
           <input
             type="text"
             value={viewDid}
             onChange={(e) => setViewDid(e.target.value)}
-            placeholder="Enter DID to view profile (e.g., did:ethr:0x...)"
+            placeholder="Enter DID (e.g., did:ethr:0x...)"
             className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
@@ -300,16 +262,13 @@ export default function Profile({ onProfileUpdate, onDidChange }: ProfileProps) 
 
         {Object.keys(viewProfile).length > 0 && (
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium mb-2">Profile Data:</h4>
+            <h4 className="font-medium mb-2">Profile Details:</h4>
             <div className="space-y-1">
               {viewProfile.name && (
                 <p><span className="font-medium">Name:</span> {viewProfile.name}</p>
               )}
               {viewProfile.email && (
                 <p><span className="font-medium">Email:</span> {viewProfile.email}</p>
-              )}
-              {viewProfile.insurance && (
-                <p><span className="font-medium">Insurance:</span> {viewProfile.insurance}</p>
               )}
               {viewProfile.ethAddress && (
                 <p><span className="font-medium">ETH Address:</span> <span className="font-mono text-sm">{viewProfile.ethAddress}</span></p>

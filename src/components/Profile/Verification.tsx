@@ -1,161 +1,162 @@
+'use client';
+
 import React, { useState } from 'react';
-import { ExtendedProfile, VerificationBadge } from '@/types/profile';
-import TrustBadge from './TrustBadge';
+import { ExtendedProfile, VerificationFlow, VerificationStep } from '@/types/profile';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Check, X, AlertCircle } from 'lucide-react';
 
 interface VerificationProps {
   profile: ExtendedProfile;
-  onVerify: () => Promise<void>;
-  loading?: boolean;
+  onVerificationUpdate?: (flow: VerificationFlow) => void;
 }
 
-const Verification: React.FC<VerificationProps> = ({ profile, onVerify, loading = false }) => {
-  const [showDetails, setShowDetails] = useState(false);
-
-  const { verification } = profile;
-
-  const getVerificationSteps = () => {
-    const steps = [
+export const Verification: React.FC<VerificationProps> = ({ 
+  profile, 
+  onVerificationUpdate 
+}) => {
+  const [verificationFlow, setVerificationFlow] = useState<VerificationFlow>({
+    steps: [
       {
         id: 'email',
-        title: 'Vérification Email',
-        completed: verification.emailVerified,
-        required: true,
-        description: 'Confirmer votre adresse email'
+        title: 'Email Verification',
+        description: 'Verify your email address',
+        completed: profile.verification.emailVerified,
+        required: true
       },
       {
-        id: 'name',
-        title: 'Nom fourni',
-        completed: !!profile.name,
-        required: true,
-        description: 'Ajouter votre nom complet'
+        id: 'profile',
+        title: 'Profile Completion',
+        description: 'Complete your basic profile information',
+        completed: !!(profile.name && profile.email),
+        required: true
       },
       {
-        id: 'insurance',
-        title: 'Assurance',
-        completed: !!profile.insurance,
-        required: false,
-        description: 'Ajouter votre assurance'
+        id: 'role',
+        title: 'Role Verification',
+        description: 'Verify your role and permissions',
+        completed: profile.verification.roleVerified,
+        required: true
       }
-    ];
+    ],
+    currentStep: 0,
+    completed: false
+  });
 
-    return steps;
+  const handleStepComplete = (stepId: string) => {
+    const updatedSteps = verificationFlow.steps.map(step => 
+      step.id === stepId ? { ...step, completed: true } : step
+    );
+    
+    const newFlow = {
+      ...verificationFlow,
+      steps: updatedSteps,
+      completed: updatedSteps.every(step => step.completed)
+    };
+    
+    setVerificationFlow(newFlow);
+    onVerificationUpdate?.(newFlow);
   };
 
-  const steps = getVerificationSteps();
-  const completedSteps = steps.filter(step => step.completed).length;
-  const totalSteps = steps.length;
+  const getStepIcon = (step: VerificationStep) => {
+    if (step.completed) {
+      return <Check className="w-5 h-5 text-green-600" />;
+    }
+    if (step.required) {
+      return <AlertCircle className="w-5 h-5 text-yellow-600" />;
+    }
+    return <X className="w-5 h-5 text-gray-400" />;
+  };
+
+  const getStepStatus = (step: VerificationStep) => {
+    if (step.completed) {
+      return 'bg-green-50 border-green-200';
+    }
+    if (step.required) {
+      return 'bg-yellow-50 border-yellow-200';
+    }
+    return 'bg-gray-50 border-gray-200';
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold">Vérification du Profil</h3>
-        <TrustBadge 
-          level={verification.trustLevel} 
-          score={verification.verificationScore}
-          showDetails={true}
-        />
-      </div>
-
-      {/* Progression */}
-      <div className="mb-6">
-        <div className="flex justify-between text-sm text-gray-600 mb-2">
-          <span>Progression</span>
-          <span>{completedSteps}/{totalSteps} étapes</span>
+    <Card className="border-0 shadow-lg">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          🔍 Verification Status
+        </CardTitle>
+        <div className="flex items-center gap-4">
+          <Badge 
+            variant={profile.verification.trustLevel === 'verified' ? 'default' : 'secondary'}
+          >
+            {profile.verification.trustLevel}
+          </Badge>
+          <span className="text-sm text-gray-600">
+            Score: {profile.verification.verificationScore}/100
+          </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${(completedSteps / totalSteps) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Étapes de vérification */}
-      <div className="space-y-3 mb-6">
-        {steps.map((step) => (
-          <div key={step.id} className="flex items-center space-x-3">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${
-              step.completed 
-                ? 'bg-green-500 text-white' 
-                : 'bg-gray-200 text-gray-600'
-            }`}>
-              {step.completed ? '✓' : step.required ? '!' : '○'}
-            </div>
-            <div className="flex-1">
-              <div className="font-medium">{step.title}</div>
-              <div className="text-sm text-gray-500">{step.description}</div>
-            </div>
-            {step.required && !step.completed && (
-              <span className="text-xs text-red-500 font-medium">Requis</span>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Badges obtenus */}
-      {verification.badges.length > 0 && (
-        <div className="mb-6">
-          <h4 className="font-medium mb-3">Badges obtenus</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {verification.badges.map((badge) => (
-              <div key={badge.id} className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
-                <span className="text-lg">{badge.icon}</span>
-                <div>
-                  <div className="font-medium text-sm">{badge.name}</div>
-                  <div className="text-xs text-gray-500">{badge.description}</div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {verificationFlow.steps.map((step, index) => (
+            <div
+              key={step.id}
+              className={`p-4 rounded-lg border ${getStepStatus(step)}`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {getStepIcon(step)}
+                  <div>
+                    <h4 className="font-medium text-gray-900">{step.title}</h4>
+                    <p className="text-sm text-gray-600">{step.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {step.completed ? (
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      Completed
+                    </Badge>
+                  ) : step.required ? (
+                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                      Required
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">
+                      Optional
+                    </Badge>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Bouton de vérification */}
-      {verification.trustLevel === 'unverified' && (
-        <button
-          onClick={onVerify}
-          disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          {loading ? 'Vérification en cours...' : 'Vérifier mon profil'}
-        </button>
-      )}
-
-      {/* Détails optionnels */}
-      <div className="mt-4">
-        <button
-          onClick={() => setShowDetails(!showDetails)}
-          className="text-sm text-blue-600 hover:text-blue-700"
-        >
-          {showDetails ? 'Masquer les détails' : 'Voir les détails'}
-        </button>
-        
-        {showDetails && (
-          <div className="mt-3 p-3 bg-gray-50 rounded-lg text-sm">
-            <div className="space-y-2">
-              <div>
-                <strong>Email vérifié:</strong> {verification.emailVerified ? 'Oui' : 'Non'}
-                {verification.emailVerificationDate && (
-                  <span className="text-gray-500 ml-2">
-                    (le {new Date(verification.emailVerificationDate).toLocaleDateString()})
-                  </span>
-                )}
-              </div>
-              <div>
-                <strong>Score de vérification:</strong> {verification.verificationScore}/100
-              </div>
-              <div>
-                <strong>Niveau de confiance:</strong> {verification.trustLevel}
-              </div>
-              <div>
-                <strong>Badges:</strong> {verification.badges.length}
-              </div>
+              
+              {!step.completed && step.required && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleStepComplete(step.id)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Complete {step.title}
+                  </Button>
+                </div>
+              )}
             </div>
+          ))}
+        </div>
+
+        {verificationFlow.completed && (
+          <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-green-600" />
+              <span className="font-medium text-green-800">
+                All verification steps completed!
+              </span>
+            </div>
+            <p className="text-sm text-green-700 mt-1">
+              Your profile is fully verified and you have access to all features.
+            </p>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
-};
-
-export default Verification; 
+}; 

@@ -1,12 +1,4 @@
-import { ethers } from 'ethers';
 import { BasicProfile, ExtendedProfile, VerificationStatus, UserRole } from '@/types/profile';
-
-// Extend Window interface for ethereum
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
 
 export class SelfIDService {
   private static instance: SelfIDService;
@@ -20,24 +12,14 @@ export class SelfIDService {
     return SelfIDService.instance;
   }
 
-  // Connexion wallet et génération DID
+  // Connexion via Privy uniquement
   async connectWallet(): Promise<{ account: string; did: string }> {
-    if (!window.ethereum) {
-      throw new Error('MetaMask not found. Please install MetaMask.');
-    }
-
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const accounts = await provider.send('eth_requestAccounts', []);
-    
-    if (accounts.length === 0) {
-      throw new Error('No accounts found');
-    }
-
-    const account = accounts[0];
-    this.account = account;
-    
-    // Génération d'un DID simple basé sur l'adresse ETH
+    // Cette méthode sera remplacée par Privy
+    // Pour le moment, on simule une connexion
+    const account = '0x' + Math.random().toString(16).substr(2, 40);
     const did = `did:ethr:${account}`;
+    
+    this.account = account;
     this.did = did;
 
     return { account, did };
@@ -200,6 +182,8 @@ export class SelfIDService {
   async deleteProfile(did: string): Promise<boolean> {
     try {
       localStorage.removeItem(`profile_${did}`);
+      this.account = null;
+      this.did = null;
       return true;
     } catch (error) {
       console.error('Error deleting profile:', error);
@@ -207,18 +191,22 @@ export class SelfIDService {
     }
   }
 
-  // Vérification d'un profil par DID
+  // Vérification d'un profil
   async verifyProfile(did: string): Promise<ExtendedProfile | null> {
     try {
       const profile = await this.getProfile(did);
-      return profile;
+      if (!profile) return null;
+
+      // Simulation de vérification
+      const verifiedProfile = { ...profile };
+      return verifiedProfile;
     } catch (error) {
       console.error('Error verifying profile:', error);
       return null;
     }
   }
 
-  // Vérification du rôle d'un utilisateur
+  // Vérification d'un rôle
   async verifyRole(did: string, role: UserRole, verifiedBy: string): Promise<ExtendedProfile | null> {
     try {
       const profile = await this.getProfile(did);
@@ -246,7 +234,7 @@ export class SelfIDService {
     }
   }
 
-  // Récupération de tous les profils (pour admin/assureur)
+  // Récupération de tous les profils
   async getAllProfiles(): Promise<ExtendedProfile[]> {
     try {
       const profiles: ExtendedProfile[] = [];
@@ -277,34 +265,7 @@ export class SelfIDService {
     }
   }
 
-  // Signature de données (pour intégration future)
-  async signData(data: any): Promise<string> {
-    if (!window.ethereum) {
-      throw new Error('MetaMask not available');
-    }
-
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    
-    const message = JSON.stringify(data);
-    const signature = await signer.signMessage(message);
-    
-    return signature;
-  }
-
-  // Vérification de signature (pour intégration future)
-  async verifySignature(data: any, signature: string, address: string): Promise<boolean> {
-    try {
-      const message = JSON.stringify(data);
-      const recoveredAddress = ethers.verifyMessage(message, signature);
-      return recoveredAddress.toLowerCase() === address.toLowerCase();
-    } catch (error) {
-      console.error('Error verifying signature:', error);
-      return false;
-    }
-  }
-
-  // Getters
+  // Méthodes utilitaires
   getCurrentAccount(): string | null {
     return this.account;
   }
@@ -313,7 +274,6 @@ export class SelfIDService {
     return this.did;
   }
 
-  // Nettoyage
   disconnect(): void {
     this.account = null;
     this.did = null;

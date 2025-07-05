@@ -8,11 +8,14 @@ export { Hero } from './Hero/Hero';
 // Dashboards
 export { OwnerDashboard } from './Dashboards/OwnerDashboard';
 export { SellerDashboard } from './Dashboards/SellerDashboard';
-export { InsurerDashboard } from './Dashboards/InsurerDashboard';
 
 // Role Management
 export { RoleSelector } from './RoleSelector/RoleSelector';
 export { DashboardSelector } from './DashboardSelector/DashboardSelector';
 
 // Profile (existing)
-export { default as Profile } from './Profile'; 
+export { default as Profile } from './Profile';
+
+// NFT Components
+export { CreateNFTForm } from './Forms/CreateNFTForm';
+export { NFTCard } from './NFT/NFTCard'; 

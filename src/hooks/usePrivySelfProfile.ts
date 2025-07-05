@@ -4,22 +4,20 @@
  * Hook pour gérer l'authentification Privy + Self.ID
  * 
  * Setup:
- * 1. npm install @privy-io/react-auth @self.id/web @self.id/framework ethers
+ * 1. npm install @privy-io/react-auth @self.id/web @self.id/framework
  * 2. Configurer les variables d'environnement (PRIVY_APP_ID, SELF_CERAMIC_API_URL)
  * 3. Wrapper l'app avec PrivyProvider + PrivySelfProvider
  * 
  * Usage:
- * const { connect, signer, self, profile, readProfile, writeProfile } = usePrivySelfProfile();
+ * const { connect, profile, readProfile, writeProfile } = usePrivySelfProfile();
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { ethers } from 'ethers';
 import { UserRole } from '@/types/profile';
 
 export interface BasicProfile {
   name?: string;
   email?: string;
-  insurance?: string;
   publicName?: boolean;
   role?: UserRole;
   vehicleID?: string;
@@ -34,7 +32,6 @@ export interface BasicProfile {
   vehicleInfo?: {
     vehicleID?: string;
     NFT_ID?: string;
-    insuranceHistory?: string[];
   };
 }
 
@@ -96,7 +93,6 @@ export const usePrivySelfProfile = () => {
     ready,
   } = usePrivyHook();
 
-  const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [state, setState] = useState<ProfileState>({
     isConnected: false,
     isAuthenticated: false,
@@ -123,16 +119,9 @@ export const usePrivySelfProfile = () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: undefined }));
 
-      // Créer un provider ethers basique pour le développement
-      const provider = new ethers.BrowserProvider(window.ethereum || {});
+      // Récupérer l'adresse du compte depuis Privy
+      const address = user?.wallet?.address || '0x' + Math.random().toString(16).substr(2, 40);
       
-      // Créer le signer
-      const signerInstance = await provider.getSigner();
-      setSigner(signerInstance);
-
-      // Récupérer l'adresse du compte
-      const address = await signerInstance.getAddress();
-
       // Pour le développement, on simule un DID
       const did = `did:ethr:${address}`;
 
@@ -153,7 +142,7 @@ export const usePrivySelfProfile = () => {
         error: error instanceof Error ? error.message : 'Authentication failed',
       }));
     }
-  }, []);
+  }, [user]);
 
   // Connexion via Privy
   const connect = useCallback(async () => {
@@ -174,7 +163,6 @@ export const usePrivySelfProfile = () => {
   const disconnect = useCallback(async () => {
     try {
       await logout();
-      setSigner(null);
       setState({
         isConnected: false,
         isAuthenticated: false,
@@ -194,21 +182,19 @@ export const usePrivySelfProfile = () => {
       const mockProfile = {
         name: 'John Doe',
         email: 'john@example.com',
-        insurance: 'AXA',
         publicName: true,
         role: 'owner' as UserRole,
         vehicleID: 'VIN123456789',
         nftId: 'NFT_001',
-        history: ['Vehicle registered - 2023', 'Insurance updated - 2024'],
+        history: ['Vehicle registered - 2023', 'Profile updated - 2024'],
         roleMetadata: {
-          companyName: 'John Doe Auto',
+          companyName: 'AutoDealer Inc.',
           licenseNumber: 'LIC123456',
           businessAddress: '123 Main St, City',
         },
         vehicleInfo: {
           vehicleID: 'VIN123456789',
           NFT_ID: 'NFT_001',
-          insuranceHistory: ['AXA-2023', 'AXA-2024'],
         },
       };
 
@@ -226,18 +212,18 @@ export const usePrivySelfProfile = () => {
         loading: false,
         error: error instanceof Error ? error.message : 'Failed to read profile',
       }));
-      throw error;
+      return null;
     }
   }, []);
 
-  // Écrire le profil (simulation pour le développement)
-  const writeProfile = useCallback(async (data: BasicProfile) => {
+  // Écrire le profil
+  const writeProfile = useCallback(async (updates: Partial<BasicProfile>) => {
     try {
       setState(prev => ({ ...prev, loading: true, error: undefined }));
 
-      // Simulation de l'écriture du profil
-      const updatedProfile = { ...data };
-      
+      const currentProfile = state.profile || {};
+      const updatedProfile = { ...currentProfile, ...updates };
+
       setState(prev => ({
         ...prev,
         profile: updatedProfile,
@@ -252,16 +238,25 @@ export const usePrivySelfProfile = () => {
         loading: false,
         error: error instanceof Error ? error.message : 'Failed to write profile',
       }));
-      throw error;
+      return null;
     }
-  }, []);
+  }, [state.profile]);
 
   return {
+    // État
     ...state,
+    
+    // Méthodes Privy
     connect,
     disconnect,
+    
+    // Méthodes de profil
     readProfile,
     writeProfile,
-    signer,
+    
+    // Données utilisateur
+    user,
+    authenticated,
+    ready,
   };
 }; 

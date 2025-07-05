@@ -6,7 +6,7 @@
  * Fonctionnalités:
  * - Connexion via Privy (email/SMS)
  * - Affichage du compte connecté et DID
- * - Formulaire de profil (name, email, insurance)
+ * - Formulaire de profil (name, email)
  * - Lecture/écriture du profil Self.ID
  * 
  * Setup:
@@ -28,6 +28,21 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, X, User, Car, Shield, History } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+interface ProfileFormData {
+  name: string;
+  email: string;
+  role: UserRole;
+  roleMetadata: {
+    companyName: string;
+    licenseNumber: string;
+    businessAddress: string;
+  };
+  history: string[];
+}
 
 export default function ProfilePage() {
   const {
@@ -40,17 +55,20 @@ export default function ProfilePage() {
   } = usePrivySelf();
 
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileFormData>({
     name: '',
     email: '',
-    insurance: '',
-    role: '' as UserRole | '',
-    vehicleID: '',
-    nftId: '',
-    history: [] as string[],
+    role: 'owner',
+    roleMetadata: {
+      companyName: '',
+      licenseNumber: '',
+      businessAddress: '',
+    },
+    history: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newHistoryItem, setNewHistoryItem] = useState('');
+  const [saved, setSaved] = useState(false);
 
   // Load profile data when component mounts
   useEffect(() => {
@@ -58,20 +76,33 @@ export default function ProfilePage() {
       setFormData({
         name: profile.name || '',
         email: profile.email || '',
-        insurance: profile.insurance || '',
-        role: profile.role || '',
-        vehicleID: profile.vehicleID || '',
-        nftId: profile.nftId || '',
+        role: profile.role || 'owner',
+        roleMetadata: {
+          companyName: profile.roleMetadata?.companyName || '',
+          licenseNumber: profile.roleMetadata?.licenseNumber || '',
+          businessAddress: profile.roleMetadata?.businessAddress || '',
+        },
         history: profile.history || [],
       });
     }
   }, [profile]);
 
   // Memoize input change handler
-  const handleInputChange = useCallback((field: string, value: string | UserRole) => {
+  const handleInputChange = useCallback((field: keyof ProfileFormData, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
+    }));
+  }, []);
+
+  // Memoize role metadata change handler
+  const handleRoleMetadataChange = useCallback((field: keyof ProfileFormData['roleMetadata'], value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      roleMetadata: {
+        ...prev.roleMetadata,
+        [field]: value,
+      },
     }));
   }, []);
 
@@ -105,7 +136,8 @@ export default function ProfilePage() {
         ...profile,
         ...formData,
       });
-      alert('Profile updated successfully!');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
     } catch (error) {
       console.error('Error updating profile:', error);
       alert('Failed to update profile');
@@ -155,6 +187,8 @@ export default function ProfilePage() {
     return authRequiredContent;
   }
 
+  const roleConfig = ROLE_CONFIGS[formData.role];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
@@ -197,25 +231,24 @@ export default function ProfilePage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Name
-                    </label>
+                    <Label htmlFor="name">Full Name *</Label>
                     <Input
-                      type="text"
+                      id="name"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      placeholder="Enter your name"
+                      placeholder="Enter your full name"
+                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email
-                    </label>
+                    <Label htmlFor="email">Email Address *</Label>
                     <Input
+                      id="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      placeholder="Enter your email"
+                      placeholder="your.email@example.com"
+                      required
                     />
                   </div>
                 </div>
@@ -230,14 +263,16 @@ export default function ProfilePage() {
                   Role
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {(['owner', 'seller', 'insurer'] as UserRole[]).map((role) => {
+                  {(['owner', 'seller'] as UserRole[]).map((role) => {
                     const config = ROLE_CONFIGS[role];
+                    const isSelected = formData.role === role;
+
                     return (
                       <Card
                         key={role}
                         className={`
                           cursor-pointer transition-all border-2
-                          ${formData.role === role
+                          ${isSelected
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-gray-200 hover:border-gray-300'
                           }
@@ -266,94 +301,42 @@ export default function ProfilePage() {
 
               <Separator />
 
-              {/* Vehicle Information */}
+              {/* Role-specific Information */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Car className="w-5 h-5 mr-2" />
-                  Vehicle Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Vehicle ID (VIN)
-                    </label>
-                    <Input
-                      type="text"
-                      value={formData.vehicleID}
-                      onChange={(e) => handleInputChange('vehicleID', e.target.value)}
-                      placeholder="Enter vehicle VIN"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      NFT ID
-                    </label>
-                    <Input
-                      type="text"
-                      value={formData.nftId}
-                      onChange={(e) => handleInputChange('nftId', e.target.value)}
-                      placeholder="Enter NFT ID"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Insurance */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Insurance Provider
-                </label>
-                <Input
-                  type="text"
-                  value={formData.insurance}
-                  onChange={(e) => handleInputChange('insurance', e.target.value)}
-                  placeholder="Enter insurance provider"
-                />
-              </div>
-
-              <Separator />
-
-              {/* History */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <History className="w-5 h-5 mr-2" />
-                  History
+                  <Shield className="w-5 h-5 mr-2" />
+                  Role Details
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex space-x-2">
-                    <Input
-                      type="text"
-                      value={newHistoryItem}
-                      onChange={(e) => setNewHistoryItem(e.target.value)}
-                      placeholder="Add history item"
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleHistoryAdd())}
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleHistoryAdd}
-                      size="sm"
-                      className="px-4"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
                   <div className="space-y-2">
-                    {formData.history.map((item, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <span className="text-sm text-gray-700">{item}</span>
-                        <Button
-                          type="button"
-                          onClick={() => handleHistoryRemove(index)}
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
+                    <Label htmlFor="companyName">Company Name</Label>
+                    <Input
+                      id="companyName"
+                      value={formData.roleMetadata.companyName}
+                      onChange={(e) => handleRoleMetadataChange('companyName', e.target.value)}
+                      placeholder="Enter company name"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="licenseNumber">License Number</Label>
+                    <Input
+                      id="licenseNumber"
+                      value={formData.roleMetadata.licenseNumber}
+                      onChange={(e) => handleRoleMetadataChange('licenseNumber', e.target.value)}
+                      placeholder="Enter license number"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="businessAddress">Business Address</Label>
+                    <Textarea
+                      id="businessAddress"
+                      value={formData.roleMetadata.businessAddress}
+                      onChange={(e) => handleRoleMetadataChange('businessAddress', e.target.value)}
+                      placeholder="Enter business address"
+                      rows={3}
+                    />
                   </div>
                 </div>
               </div>
@@ -385,6 +368,13 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Success Message */}
+      {saved && (
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+          Profile saved successfully!
+        </div>
+      )}
     </div>
   );
 } 

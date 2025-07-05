@@ -22,7 +22,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader className="text-center pb-4">
                 <div className="text-4xl mb-4">🚗</div>
@@ -32,11 +32,11 @@ export default function Home() {
               <CardContent className="text-center">
                 <div className="space-y-3 mb-6">
                   <Badge variant="secondary" className="mr-2">Transfer NFTs</Badge>
-                  <Badge variant="secondary">Manage Insurance</Badge>
                   <Badge variant="secondary">View History</Badge>
+                  <Badge variant="secondary">Manage Profile</Badge>
                 </div>
                 <p className="text-sm text-gray-600">
-                  Manage your vehicles and insurance policies with full control over your NFT assets.
+                  Manage your vehicles with full control over your NFT assets and view your vehicle history.
                 </p>
               </CardContent>
             </Card>
@@ -58,24 +58,6 @@ export default function Home() {
                 </p>
               </CardContent>
             </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardHeader className="text-center pb-4">
-                <div className="text-4xl mb-4">🛡️</div>
-                <CardTitle className="text-xl">Insurer</CardTitle>
-                <p className="text-gray-600 text-sm">Insurance company</p>
-              </CardHeader>
-              <CardContent className="text-center">
-                <div className="space-y-3 mb-6">
-                  <Badge variant="secondary" className="mr-2">Manage Policies</Badge>
-                  <Badge variant="secondary">Process Claims</Badge>
-                  <Badge variant="secondary">Verify Profiles</Badge>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Manage insurance policies, process claims, and verify customer profiles.
-                </p>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>
@@ -92,7 +74,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
             <Card className="border-0 shadow-md bg-white">
               <CardContent className="p-6 text-center">
                 <div className="text-2xl mb-2">🔐</div>
@@ -106,22 +88,6 @@ export default function Home() {
                 <div className="text-2xl mb-2">🆔</div>
                 <h3 className="font-semibold text-gray-900">Self.ID</h3>
                 <p className="text-sm text-gray-600">Decentralized Identity</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-md bg-white">
-              <CardContent className="p-6 text-center">
-                <div className="text-2xl mb-2">🌊</div>
-                <h3 className="font-semibold text-gray-900">Flow</h3>
-                <p className="text-sm text-gray-600">Blockchain</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-md bg-white">
-              <CardContent className="p-6 text-center">
-                <div className="text-2xl mb-2">🌴</div>
-                <h3 className="font-semibold text-gray-900">Oasis</h3>
-                <p className="text-sm text-gray-600">Privacy Layer</p>
               </CardContent>
             </Card>
           </div>

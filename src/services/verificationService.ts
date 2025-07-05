@@ -41,11 +41,6 @@ export class VerificationService {
       score += 15;
     }
 
-    // Assurance fournie
-    if (profile.insurance) {
-      score += 15;
-    }
-
     // Badges gagnés
     score += profile.verification.badges.length * 5;
 
@@ -172,7 +167,6 @@ export class VerificationService {
     report += `\n## Informations vérifiées:\n`;
     report += `- Email: ${verification.emailVerified ? '✅ Vérifié' : '❌ Non vérifié'}\n`;
     report += `- Nom: ${profile.name ? '✅ Fourni' : '❌ Manquant'}\n`;
-    report += `- Assurance: ${profile.insurance ? '✅ Fournie' : '❌ Manquante'}\n`;
     
     return report;
   }

@@ -54,9 +54,6 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
                   {config.permissions.canTransferNFTs && (
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">Transférer</span>
                   )}
-                  {config.permissions.canUpdateInsurance && (
-                    <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">Assurance</span>
-                  )}
                   {config.permissions.canVerifyProfiles && (
                     <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded">Vérifier</span>
                   )}

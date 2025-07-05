@@ -9,33 +9,28 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@privy-io/react-auth": "^2.15.0",
-    "@radix-ui/react-avatar": "^1.1.10",
-    "@radix-ui/react-separator": "^1.1.7",
-    "@radix-ui/react-slot": "^1.2.3",
-    "@radix-ui/react-tabs": "^1.1.12",
-    "@self.id/framework": "^0.4.0",
-    "@self.id/web": "^0.5.0",
+    "@privy-io/react-auth": "^1.47.0",
+    "@self.id/framework": "^1.0.0",
+    "@self.id/web": "^1.0.0",
+    "@web3-storage/w3up-client": "^17.3.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "lucide-react": "^0.294.0",
+    "next": "14.0.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "tailwind-merge": "^2.0.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "ethers": "^6.8.1",
-    "lucide-react": "^0.525.0",
-    "next": "14.0.4",
-    "postcss": "^8",
-    "react": "^18",
-    "react-dom": "^18",
-    "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^3.3.0",
-    "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5",
-    "valtio": "^1.13.2"
-  },
-  "devDependencies": {
     "eslint": "^8",
-    "eslint-config-next": "14.0.4"
+    "eslint-config-next": "14.0.4",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
   }
 }

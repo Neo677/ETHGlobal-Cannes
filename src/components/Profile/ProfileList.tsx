@@ -31,7 +31,7 @@ const ProfileList: React.FC<ProfileListProps> = ({
     return matchesRole && matchesSearch;
   });
 
-  const canVerifyRoles = currentUserRole === 'admin' || currentUserRole === 'insurer';
+  const canVerifyRoles = currentUserRole === 'admin';
 
   return (
     <div className="space-y-4">
@@ -63,7 +63,7 @@ const ProfileList: React.FC<ProfileListProps> = ({
       </div>
 
       {/* Statistiques */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
         {Object.values(ROLE_CONFIGS).map(config => {
           const count = profiles.filter(p => p.role === config.role).length;
           return (
