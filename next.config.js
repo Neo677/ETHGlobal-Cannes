@@ -1,6 +1,33 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuration par défaut pour Next.js 14
-}
+  experimental: {
+    appDir: true,
+  },
+  webpack: (config, { isServer }) => {
+    // Résoudre les problèmes de modules avec Privy
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+    };
 
-module.exports = nextConfig 
+    // Configuration pour les modules ESM
+    config.module.rules.push({
+      test: /\.m?js$/,
+      type: 'javascript/auto',
+      resolve: {
+        fullySpecified: false,
+      },
+    });
+
+    return config;
+  },
+  // Configuration pour les variables d'environnement
+  env: {
+    NEXT_PUBLIC_PRIVY_APP_ID: process.env.NEXT_PUBLIC_PRIVY_APP_ID,
+    NEXT_PUBLIC_SELF_CERAMIC_API_URL: process.env.NEXT_PUBLIC_SELF_CERAMIC_API_URL,
+  },
+};
+
+module.exports = nextConfig; 

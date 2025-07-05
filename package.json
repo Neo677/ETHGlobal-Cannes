@@ -9,26 +9,24 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "14.2.5",
-    "react": "^18",
-    "react-dom": "^18",
+    "@privy-io/react-auth": "^2.15.0",
+    "@self.id/framework": "^0.4.0",
     "@self.id/web": "^0.5.0",
-    "wagmi": "^2.5.7",
-    "viem": "^2.7.9",
-    "@wagmi/core": "^2.5.7",
-    "@wagmi/connectors": "^2.5.7",
-    "ethers": "^6.11.1",
-    "lucide-react": "^0.344.0"
-  },
-  "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
+    "ethers": "^6.8.1",
+    "next": "14.0.4",
     "postcss": "^8",
+    "react": "^18",
+    "react-dom": "^18",
     "tailwindcss": "^3.3.0",
+    "typescript": "^5",
+    "valtio": "^2.1.5"
+  },
+  "devDependencies": {
     "eslint": "^8",
-    "eslint-config-next": "14.2.5"
+    "eslint-config-next": "14.0.4"
   }
-} 
+}

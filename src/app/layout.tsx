@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { PrivyProvider } from '@/providers/PrivyProvider'
+import { PrivySelfProvider } from '@/providers/PrivySelfProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'MetaCarTag - Web3 Car Registration',
-  description: 'Decentralized car registration with Self.ID, Flow, and Oasis',
+  description: 'Decentralized vehicle registration with Privy + Self.ID',
 }
 
 export default function RootLayout({
@@ -17,9 +19,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gray-50">
-          {children}
-        </div>
+        <PrivyProvider>
+          <PrivySelfProvider>
+            {children}
+          </PrivySelfProvider>
+        </PrivyProvider>
       </body>
     </html>
   )
