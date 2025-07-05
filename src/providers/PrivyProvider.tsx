@@ -43,8 +43,6 @@ export const PrivyProvider: React.FC<PrivyProviderProps> = ({ children }) => {
             accentColor: '#3B82F6',
             showWalletLoginFirst: false,
           },
-          defaultChain: 1,
-          supportedChains: [1, 137, 10],
         }}
       >
         {children}

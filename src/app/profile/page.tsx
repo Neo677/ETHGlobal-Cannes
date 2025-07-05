@@ -17,307 +17,363 @@
 
 'use client';
 
-import React, { useState } from 'react';
-import { usePrivySelf, BasicProfile } from '@/providers/PrivySelfProvider';
+import React, { useState, useEffect } from 'react';
+import { usePrivySelf } from '@/providers/PrivySelfProvider';
+import { UserRole, ROLE_CONFIGS } from '@/types/profile';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Plus, X, User, Car, Shield, History } from 'lucide-react';
 
 export default function ProfilePage() {
   const {
-    isConnected,
     isAuthenticated,
-    account,
-    did,
     profile,
     loading,
     error,
     connect,
-    disconnect,
-    readProfile,
     writeProfile,
   } = usePrivySelf();
 
-  const [formData, setFormData] = useState<BasicProfile>({
-    name: profile?.name || '',
-    email: profile?.email || '',
-    insurance: profile?.insurance || '',
-    publicName: profile?.publicName || false,
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    insurance: '',
+    role: '' as UserRole | '',
+    vehicleID: '',
+    nftId: '',
+    history: [] as string[],
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newHistoryItem, setNewHistoryItem] = useState('');
 
-  const [isEditing, setIsEditing] = useState(false);
-
-  // Mettre à jour le formulaire quand le profil change
-  React.useEffect(() => {
+  // Load profile data when component mounts
+  useEffect(() => {
     if (profile) {
       setFormData({
         name: profile.name || '',
         email: profile.email || '',
         insurance: profile.insurance || '',
-        publicName: profile.publicName || false,
+        role: profile.role || '',
+        vehicleID: profile.vehicleID || '',
+        nftId: profile.nftId || '',
+        history: profile.history || [],
       });
     }
   }, [profile]);
 
-  const handleConnect = async () => {
-    try {
-      await connect();
-    } catch (error) {
-      console.error('Connection failed:', error);
+  const handleInputChange = (field: string, value: string | UserRole) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleHistoryAdd = () => {
+    if (newHistoryItem.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        history: [...prev.history, newHistoryItem.trim()],
+      }));
+      setNewHistoryItem('');
     }
   };
 
-  const handleDisconnect = async () => {
+  const handleHistoryRemove = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      history: prev.history.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isAuthenticated) return;
+
+    setIsSubmitting(true);
     try {
-      await disconnect();
+      await writeProfile({
+        ...profile,
+        ...formData,
+      });
+      alert('Profile updated successfully!');
     } catch (error) {
-      console.error('Disconnection failed:', error);
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleReadProfile = async () => {
-    try {
-      await readProfile();
-    } catch (error) {
-      console.error('Failed to read profile:', error);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md border-0 shadow-xl">
+          <CardHeader className="text-center">
+            <Skeleton className="h-12 w-12 rounded-full mx-auto mb-4" />
+            <Skeleton className="h-6 w-48 mx-auto mb-2" />
+            <Skeleton className="h-4 w-32 mx-auto" />
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
-  const handleSaveProfile = async () => {
-    try {
-      await writeProfile(formData);
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Failed to save profile:', error);
-    }
-  };
-
-  const updateField = (field: keyof BasicProfile, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md border-0 shadow-xl">
+          <CardHeader className="text-center">
+            <div className="text-4xl mb-4">🔐</div>
+            <CardTitle className="text-2xl">Authentication Required</CardTitle>
+            <p className="text-gray-600">
+              Please connect to edit your profile
+            </p>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button onClick={connect} className="w-full">
+              Connect with Privy
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">MetaCarTag Profile</h1>
-          <p className="text-xl text-gray-600">Web3 Identity with Privy + Self.ID</p>
-        </div>
-
-        {/* Section de connexion */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-2xl font-semibold mb-4">Wallet Connection</h2>
-          
-          {!isConnected ? (
-            <div className="text-center">
-              <button
-                onClick={handleConnect}
-                disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors"
-              >
-                {loading ? 'Connecting...' : 'Connect with Privy'}
-              </button>
-              <p className="text-sm text-gray-500 mt-2">
-                Connect with email or SMS to get started
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Header */}
+      <div className="bg-white/80 backdrop-blur border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Edit Profile
+              </h1>
+              <p className="text-gray-600">
+                Update your profile information
               </p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Informations blockchain */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <span className="font-medium text-gray-700">Connected Account:</span>
-                  <div className="mt-1 font-mono text-sm bg-gray-100 px-3 py-2 rounded break-all">
-                    {account || 'Loading...'}
-                  </div>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">DID:</span>
-                  <div className="mt-1 font-mono text-sm bg-gray-100 px-3 py-2 rounded break-all">
-                    {did || 'Not authenticated'}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <div className={`w-3 h-3 rounded-full ${isAuthenticated ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                <span className="text-sm text-gray-600">
-                  {isAuthenticated ? 'Self.ID Authenticated' : 'Self.ID Pending'}
-                </span>
-              </div>
-
-              <button
-                onClick={handleDisconnect}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                Disconnect
-              </button>
+            <div className="flex items-center space-x-4">
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                ✅ Connected
+              </Badge>
             </div>
-          )}
+          </div>
         </div>
+      </div>
 
-        {/* Section de profil */}
-        {isConnected && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold">Profile Information</h2>
-              <div className="space-x-2">
-                {!isEditing ? (
-                  <>
-                    <button
-                      onClick={handleReadProfile}
-                      disabled={loading}
-                      className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-colors"
-                    >
-                      {loading ? 'Loading...' : 'Read Profile'}
-                    </button>
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                    >
-                      Edit Profile
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => setIsEditing(false)}
-                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {isEditing ? (
-              <form onSubmit={(e) => { e.preventDefault(); handleSaveProfile(); }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => updateField('name', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Your full name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => updateField('email', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="your.email@example.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Insurance
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.insurance}
-                    onChange={(e) => updateField('insurance', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., AXA, Allianz"
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="publicName"
-                    checked={formData.publicName}
-                    onChange={(e) => updateField('publicName', e.target.checked)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="publicName" className="text-sm text-gray-700">
-                    Make name public
-                  </label>
-                </div>
-
-                <div className="flex space-x-3 pt-4">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg transition-colors"
-                  >
-                    {loading ? 'Saving...' : 'Save Profile'}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="space-y-4">
-                {profile ? (
-                  <>
-                    {profile.name && (
-                      <div>
-                        <span className="font-medium text-gray-700">Name:</span>
-                        <span className="ml-2">{profile.name}</span>
-                        {profile.publicName && (
-                          <span className="ml-2 text-green-600 text-sm">(Public)</span>
-                        )}
-                      </div>
-                    )}
-                    {profile.email && (
-                      <div>
-                        <span className="font-medium text-gray-700">Email:</span>
-                        <span className="ml-2">{profile.email}</span>
-                      </div>
-                    )}
-                    {profile.insurance && (
-                      <div>
-                        <span className="font-medium text-gray-700">Insurance:</span>
-                        <span className="ml-2">{profile.insurance}</span>
-                      </div>
-                    )}
-                    {!profile.name && !profile.email && !profile.insurance && (
-                      <div className="text-center py-8 text-gray-500">
-                        No profile information found. Click "Edit Profile" to add your information.
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    No profile loaded. Click "Read Profile" to load your information.
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center">
+              <User className="w-6 h-6 mr-2" />
+              Profile Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Basic Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <User className="w-5 h-5 mr-2" />
+                  Basic Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Name
+                    </label>
+                    <Input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      placeholder="Enter your name"
+                    />
                   </div>
-                )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
-        )}
 
-        {/* Affichage des erreurs */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-6">
-            <div className="flex items-center space-x-2">
-              <span className="text-red-600">⚠️</span>
-              <span className="font-medium text-red-800">Error</span>
-            </div>
-            <p className="text-red-700 mt-1">{error}</p>
-          </div>
-        )}
+              <Separator />
 
-        {/* Instructions */}
-        {!isConnected && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-            <div className="flex items-center space-x-2">
-              <span className="text-blue-600">ℹ️</span>
-              <span className="font-medium text-blue-800">Getting Started</span>
-            </div>
-            <div className="text-blue-700 mt-2 space-y-1 text-sm">
-              <p>1. Click "Connect with Privy" to authenticate</p>
-              <p>2. Use your email or phone number to connect</p>
-              <p>3. Your Self.ID will be automatically created</p>
-              <p>4. Edit your profile information</p>
-              <p>5. Save your profile to Ceramic network</p>
-            </div>
-          </div>
-        )}
+              {/* Role Selection */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Shield className="w-5 h-5 mr-2" />
+                  Role
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {(['owner', 'dealer', 'insurer'] as UserRole[]).map((role) => {
+                    const config = ROLE_CONFIGS[role];
+                    return (
+                      <Card
+                        key={role}
+                        className={`
+                          cursor-pointer transition-all border-2
+                          ${formData.role === role
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                          }
+                        `}
+                        onClick={() => handleInputChange('role', role)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-3">
+                            <div className={`
+                              w-8 h-8 rounded-full flex items-center justify-center text-white
+                              ${config.color}
+                            `}>
+                              {config.icon}
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-gray-900">{config.label}</h4>
+                              <p className="text-sm text-gray-600">{config.description}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Vehicle Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Car className="w-5 h-5 mr-2" />
+                  Vehicle Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Vehicle ID (VIN)
+                    </label>
+                    <Input
+                      type="text"
+                      value={formData.vehicleID}
+                      onChange={(e) => handleInputChange('vehicleID', e.target.value)}
+                      placeholder="Enter vehicle VIN"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      NFT ID
+                    </label>
+                    <Input
+                      type="text"
+                      value={formData.nftId}
+                      onChange={(e) => handleInputChange('nftId', e.target.value)}
+                      placeholder="Enter NFT ID"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Insurance */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Insurance Provider
+                </label>
+                <Input
+                  type="text"
+                  value={formData.insurance}
+                  onChange={(e) => handleInputChange('insurance', e.target.value)}
+                  placeholder="Enter insurance provider"
+                />
+              </div>
+
+              <Separator />
+
+              {/* History */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <History className="w-5 h-5 mr-2" />
+                  History
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex space-x-2">
+                    <Input
+                      type="text"
+                      value={newHistoryItem}
+                      onChange={(e) => setNewHistoryItem(e.target.value)}
+                      placeholder="Add history item"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleHistoryAdd())}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleHistoryAdd}
+                      size="sm"
+                      className="px-4"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {formData.history.map((item, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span className="text-sm text-gray-700">{item}</span>
+                        <Button
+                          type="button"
+                          onClick={() => handleHistoryRemove(index)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Error Display */}
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600">{error}</p>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <div className="flex justify-end space-x-4 pt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push('/dashboard')}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Saving...' : 'Save Profile'}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

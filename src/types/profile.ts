@@ -6,6 +6,10 @@ export interface BasicProfile {
   insurance?: string;
   ethAddress?: string;
   publicName?: boolean;
+  role?: UserRole;
+  vehicleID?: string;
+  nftId?: string;
+  history?: string[];
 }
 
 // Types pour les rôles utilisateur
@@ -91,8 +95,8 @@ export interface VerificationFlow {
 export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
   owner: {
     role: 'owner',
-    label: 'Propriétaire',
-    description: 'Détenteur du véhicule',
+    label: 'Owner',
+    description: 'Vehicle owner',
     color: 'bg-blue-500',
     icon: '🚗',
     permissions: {
@@ -105,8 +109,8 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
   },
   dealer: {
     role: 'dealer',
-    label: 'Concessionnaire',
-    description: 'Vendeur de véhicules',
+    label: 'Dealer',
+    description: 'Vehicle seller',
     color: 'bg-green-500',
     icon: '🏢',
     permissions: {
@@ -119,8 +123,8 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
   },
   insurer: {
     role: 'insurer',
-    label: 'Assureur',
-    description: 'Compagnie d\'assurance',
+    label: 'Insurer',
+    description: 'Insurance company',
     color: 'bg-purple-500',
     icon: '🛡️',
     permissions: {
@@ -133,8 +137,8 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
   },
   admin: {
     role: 'admin',
-    label: 'Administrateur',
-    description: 'Gestionnaire système',
+    label: 'Administrator',
+    description: 'System manager',
     color: 'bg-red-500',
     icon: '⚙️',
     permissions: {

@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { PrivyProvider } from '@/providers/PrivyProvider'
 import { PrivySelfProvider } from '@/providers/PrivySelfProvider'
+import { Navbar } from '@/components/Navbar/Navbar'
+import { Footer } from '@/components/Footer/Footer'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -21,7 +23,13 @@ export default function RootLayout({
       <body className={inter.className}>
         <PrivyProvider>
           <PrivySelfProvider>
-            {children}
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </div>
           </PrivySelfProvider>
         </PrivyProvider>
       </body>

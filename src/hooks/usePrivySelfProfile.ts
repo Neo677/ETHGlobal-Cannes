@@ -13,14 +13,29 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { SelfID } from '@self.id/web';
 import { ethers } from 'ethers';
+import { UserRole } from '@/types/profile';
 
 export interface BasicProfile {
   name?: string;
   email?: string;
   insurance?: string;
   publicName?: boolean;
+  role?: UserRole;
+  vehicleID?: string;
+  nftId?: string;
+  history?: string[];
+  roleMetadata?: {
+    companyName?: string;
+    licenseNumber?: string;
+    businessAddress?: string;
+    verifiedBy?: string;
+  };
+  vehicleInfo?: {
+    vehicleID?: string;
+    NFT_ID?: string;
+    insuranceHistory?: string[];
+  };
 }
 
 export interface ProfileState {
@@ -36,7 +51,7 @@ export interface ProfileState {
 // Hook de fallback pour Privy
 const usePrivyFallback = () => {
   const [authenticated, setAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -53,18 +68,12 @@ const usePrivyFallback = () => {
     setUser(null);
   };
 
-  const getEthersProvider = async () => {
-    // Provider de test pour le développement
-    return new ethers.BrowserProvider(window.ethereum || {});
-  };
-
   return {
     login,
     logout,
     authenticated,
     user,
     ready,
-    getEthersProvider,
   };
 };
 
@@ -85,10 +94,8 @@ export const usePrivySelfProfile = () => {
     authenticated,
     user,
     ready,
-    getEthersProvider,
   } = usePrivyHook();
 
-  const [self, setSelf] = useState<SelfID | null>(null);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [state, setState] = useState<ProfileState>({
     isConnected: false,
@@ -116,32 +123,18 @@ export const usePrivySelfProfile = () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: undefined }));
 
-      // Récupérer le provider ethers depuis Privy
-      const provider = await getEthersProvider();
-      if (!provider) {
-        throw new Error('Failed to get Privy provider');
-      }
-
+      // Créer un provider ethers basique pour le développement
+      const provider = new ethers.BrowserProvider(window.ethereum || {});
+      
       // Créer le signer
-      const signerInstance = provider.getSigner();
+      const signerInstance = await provider.getSigner();
       setSigner(signerInstance);
 
       // Récupérer l'adresse du compte
       const address = await signerInstance.getAddress();
 
-      // Authentifier Self.ID avec le signer Privy
-      const selfInstance = await SelfID.authenticate({
-        client: {
-          ceramic: process.env.NEXT_PUBLIC_SELF_CERAMIC_API_URL || 'https://ceramic-clay.3boxlabs.com',
-        },
-        session: {
-          signer: signerInstance,
-        },
-      });
-      setSelf(selfInstance);
-
-      // Récupérer le DID
-      const did = selfInstance.did;
+      // Pour le développement, on simule un DID
+      const did = `did:ethr:${address}`;
 
       setState(prev => ({
         ...prev,
@@ -160,7 +153,7 @@ export const usePrivySelfProfile = () => {
         error: error instanceof Error ? error.message : 'Authentication failed',
       }));
     }
-  }, [getEthersProvider]);
+  }, []);
 
   // Connexion via Privy
   const connect = useCallback(async () => {
@@ -181,7 +174,6 @@ export const usePrivySelfProfile = () => {
   const disconnect = useCallback(async () => {
     try {
       await logout();
-      setSelf(null);
       setSigner(null);
       setState({
         isConnected: false,
@@ -193,28 +185,40 @@ export const usePrivySelfProfile = () => {
     }
   }, [logout]);
 
-  // Lire le profil Self.ID
+  // Lire le profil (simulation pour le développement)
   const readProfile = useCallback(async (targetDid?: string) => {
-    if (!self) {
-      throw new Error('Self.ID not authenticated');
-    }
-
     try {
       setState(prev => ({ ...prev, loading: true, error: undefined }));
 
-      const did = targetDid || self.did;
-      const profile = await self.get('basicProfile', did);
+      // Simulation d'un profil pour le développement
+      const mockProfile = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        insurance: 'AXA',
+        publicName: true,
+        role: 'owner' as UserRole,
+        vehicleID: 'VIN123456789',
+        nftId: 'NFT_001',
+        history: ['Vehicle registered - 2023', 'Insurance updated - 2024'],
+        roleMetadata: {
+          companyName: 'John Doe Auto',
+          licenseNumber: 'LIC123456',
+          businessAddress: '123 Main St, City',
+        },
+        vehicleInfo: {
+          vehicleID: 'VIN123456789',
+          NFT_ID: 'NFT_001',
+          insuranceHistory: ['AXA-2023', 'AXA-2024'],
+        },
+      };
 
-      if (!targetDid) {
-        // Mise à jour du profil local
-        setState(prev => ({
-          ...prev,
-          profile: profile || {},
-          loading: false,
-        }));
-      }
+      setState(prev => ({
+        ...prev,
+        profile: mockProfile,
+        loading: false,
+      }));
 
-      return profile;
+      return mockProfile;
     } catch (error) {
       console.error('Error reading profile:', error);
       setState(prev => ({
@@ -224,26 +228,19 @@ export const usePrivySelfProfile = () => {
       }));
       throw error;
     }
-  }, [self]);
+  }, []);
 
-  // Écrire le profil Self.ID
+  // Écrire le profil (simulation pour le développement)
   const writeProfile = useCallback(async (data: BasicProfile) => {
-    if (!self) {
-      throw new Error('Self.ID not authenticated');
-    }
-
     try {
       setState(prev => ({ ...prev, loading: true, error: undefined }));
 
-      // Mettre à jour le profil
-      await self.set('basicProfile', data);
-
-      // Recharger le profil
-      const updatedProfile = await self.get('basicProfile');
+      // Simulation de l'écriture du profil
+      const updatedProfile = { ...data };
       
       setState(prev => ({
         ...prev,
-        profile: updatedProfile || {},
+        profile: updatedProfile,
         loading: false,
       }));
 
@@ -257,27 +254,14 @@ export const usePrivySelfProfile = () => {
       }));
       throw error;
     }
-  }, [self]);
-
-  // Charger automatiquement le profil après authentification
-  useEffect(() => {
-    if (state.isAuthenticated && self && !state.profile) {
-      readProfile().catch(console.error);
-    }
-  }, [state.isAuthenticated, self, readProfile]);
+  }, []);
 
   return {
-    // État
     ...state,
-    
-    // Instances
-    self,
-    signer,
-    
-    // Actions
     connect,
     disconnect,
     readProfile,
     writeProfile,
+    signer,
   };
 }; 
