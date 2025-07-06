@@ -1,0 +1,67 @@
+{
+  "name": "metacartag",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "blockchain:compile": "cd blockchain && npx hardhat compile",
+    "blockchain:test": "cd blockchain && npx hardhat test",
+    "blockchain:deploy:testnet": "cd blockchain && npx hardhat run scripts/deploy.ts --network sapphireTestnet",
+    "blockchain:deploy:mainnet": "cd blockchain && npx hardhat run scripts/deploy.ts --network sapphireMainnet",
+    "blockchain:verify": "cd blockchain && npx hardhat verify",
+    "clean": "rm -rf .next && rm -rf blockchain/cache && rm -rf blockchain/artifacts",
+    "setup": "npm install && npm run blockchain:compile"
+  },
+  "dependencies": {
+    "@privy-io/react-auth": "^1.47.0",
+    "@self.id/framework": "^0.4.0",
+    "@self.id/web": "^0.5.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "ethers": "^6.0.0",
+    "lucide-react": "^0.263.1",
+    "next": "14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "tailwind-merge": "^2.0.0",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.0.0",
+    "web3.storage": "^5.0.0"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "autoprefixer": "^10.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "14.0.0",
+    "hardhat": "^2.17.0",
+    "postcss": "^8.0.0",
+    "tailwindcss": "^3.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/ETHGlobal-Cannes.git"
+  },
+  "keywords": [
+    "blockchain",
+    "nft",
+    "vehicle-management",
+    "oasis-sapphire",
+    "self-id",
+    "privacy",
+    "confidential-computing"
+  ],
+  "author": "MetaCarTag Team",
+  "license": "MIT"
+}
