@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BasicProfile } from '@/hooks/usePrivySelfProfile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CreateNFTForm } from '@/components/Forms/CreateNFTForm';
+import { MintForm } from '@/components/MintForm';
 import { NFTCard } from '@/components/NFT/NFTCard';
 import { Car, Plus, X } from 'lucide-react';
 
@@ -25,41 +24,35 @@ interface VehicleNFTData {
   description: string;
 }
 
-interface SellerDashboardProps {
-  profile: BasicProfile;
-}
-
-export const SellerDashboard: React.FC<SellerDashboardProps> = ({ profile }) => {
-  const [showCreateForm, setShowCreateForm] = useState(false);
+export const SellerDashboard: React.FC = () => {
+  const [showMintForm, setShowMintForm] = useState(false);
   const [userNFTs, setUserNFTs] = useState<any[]>([]);
 
-  const handleCreateNFT = (vehicleData: any) => {
-    // TODO: This will be implemented by the team (Asma's branch)
-    console.log('Creating NFT with data:', vehicleData);
-    
-    // Mock: Add NFT to the list
+  const handleMintSuccess = (tokenId: string, transactionHash: string) => {
+    // Add the newly minted NFT to the list
     const newNFT = {
-      id: `NFT_${Date.now()}`,
-      brand: vehicleData.brand,
-      model: vehicleData.model,
-      year: Number(vehicleData.year),
-      licensePlate: vehicleData.licensePlate,
-      vin: vehicleData.vin,
-      color: vehicleData.color,
-      mileage: Number(vehicleData.mileage),
-      price: Number(vehicleData.price),
-      engineType: vehicleData.engineType,
-      fuelType: vehicleData.fuelType,
-      transmission: vehicleData.transmission,
-      description: vehicleData.description,
+      id: tokenId,
+      brand: 'New Vehicle', // This would come from the form data
+      model: 'NFT',
+      year: new Date().getFullYear(),
+      licensePlate: 'N/A',
+      vin: 'N/A',
+      color: 'N/A',
+      mileage: 0,
+      price: 0,
+      engineType: 'N/A',
+      fuelType: 'N/A',
+      transmission: 'N/A',
+      description: 'Newly minted vehicle NFT',
       mintDate: new Date().toISOString(),
       status: 'available' as const,
       ownerDID: 'user-did-placeholder',
       encryptedMetadata: false,
+      transactionHash,
     };
 
     setUserNFTs(prev => [newNFT, ...prev]);
-    setShowCreateForm(false);
+    setShowMintForm(false);
   };
 
   const handleViewNFTDetails = (nftId: string) => {
@@ -83,7 +76,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ profile }) => 
                 Seller Dashboard
               </h1>
               <p className="text-gray-600">
-                Welcome, {profile.name || 'Seller'}
+                Mint and manage your vehicle NFTs
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -97,21 +90,21 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ profile }) => 
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Create NFT Section */}
-        {showCreateForm ? (
+        {/* Mint Form Section */}
+        {showMintForm ? (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Create New Vehicle NFT</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Mint New Vehicle NFT</h2>
               <Button
                 variant="outline"
-                onClick={() => setShowCreateForm(false)}
+                onClick={() => setShowMintForm(false)}
                 className="flex items-center"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
             </div>
-            <CreateNFTForm onSubmit={handleCreateNFT} />
+            <MintForm onMintSuccess={handleMintSuccess} />
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -125,28 +118,28 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ profile }) => 
                       Vehicle Inventory
                     </CardTitle>
                     <Button
-                      onClick={() => setShowCreateForm(true)}
+                      onClick={() => setShowMintForm(true)}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Create NFT
+                      Mint NFT
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="bg-blue-50 p-4 rounded-lg">
-                      <h3 className="font-semibold text-blue-900 mb-2">Create New Vehicle NFT</h3>
+                      <h3 className="font-semibold text-blue-900 mb-2">Mint New Vehicle NFT</h3>
                       <p className="text-blue-700 text-sm mb-3">
-                        Add a new vehicle to your inventory and create an NFT for it. 
-                        The mint functionality will be available soon.
+                        Create a new vehicle NFT on the Oasis Sapphire testnet. 
+                        Use the test mint to simulate the process or connect your wallet for real minting.
                       </p>
                       <Button
-                        onClick={() => setShowCreateForm(true)}
+                        onClick={() => setShowMintForm(true)}
                         className="bg-blue-600 text-white hover:bg-blue-700"
                       >
                         <Car className="w-4 h-4 mr-2" />
-                        + Add Vehicle NFT
+                        + Mint Vehicle NFT
                       </Button>
                     </div>
                     
@@ -198,22 +191,30 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ profile }) => 
                 <CardHeader>
                   <CardTitle className="text-xl flex items-center">
                     <span className="text-2xl mr-2">📊</span>
-                    Sales Analytics
+                    Analytics
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="text-center p-4 bg-green-50 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">{userNFTs.length}</div>
-                      <div className="text-sm text-green-700">NFTs Created</div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {userNFTs.length}
+                      </div>
+                      <div className="text-sm text-green-700">Total NFTs</div>
                     </div>
+                    
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">8</div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {userNFTs.filter(nft => nft.status === 'available').length}
+                      </div>
                       <div className="text-sm text-blue-700">Available</div>
                     </div>
-                    <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600">$450K</div>
-                      <div className="text-sm text-purple-700">Total Revenue</div>
+                    
+                    <div className="text-center p-4 bg-orange-50 rounded-lg">
+                      <div className="text-2xl font-bold text-orange-600">
+                        {userNFTs.filter(nft => nft.status === 'sold').length}
+                      </div>
+                      <div className="text-sm text-orange-700">Sold</div>
                     </div>
                   </div>
                 </CardContent>
@@ -221,42 +222,6 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ profile }) => 
             </div>
           </div>
         )}
-
-        {/* Recent Transactions */}
-        <div className="mt-8">
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center">
-                <span className="text-2xl mr-2">💼</span>
-                Recent Transactions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">Honda Civic Sale</p>
-                    <p className="text-sm text-gray-600">Sold to John Doe</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-900">$25,000</p>
-                    <p className="text-sm text-gray-600">2 days ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">Toyota Camry Sale</p>
-                    <p className="text-sm text-gray-600">Sold to Jane Smith</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-900">$28,500</p>
-                    <p className="text-sm text-gray-600">1 week ago</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );

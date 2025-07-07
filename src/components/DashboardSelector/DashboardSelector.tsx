@@ -115,7 +115,7 @@ export const DashboardSelector: React.FC<DashboardSelectorProps> = ({
     case 'seller':
       return (
         <Suspense fallback={<DashboardSkeleton />}>
-          <SellerDashboard profile={profile} />
+          <SellerDashboard />
         </Suspense>
       );
     case 'admin':
